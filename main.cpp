@@ -19,7 +19,7 @@ int main() {
 
 	// Main Program
 	INode root = selectINode(1);
-	printf("%d %d %lu\n", root.id, root.size, root.createAt);
+	printf("%d %d %llu\n", root.id, root.size, root.createAt);
 	for (int i = 0; i < 10; ++i)
 		printf("%d ", root.direct_addr[i]);
 	printf("%d\n", root.indirect_addr);

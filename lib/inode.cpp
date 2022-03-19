@@ -1,6 +1,7 @@
 #include "inode.h"
 #include "storage.h"
 #include <bitset>
+#include <cstdlib>
 #include <cstring>
 
 std::bitset<INODE_MAX_NUMBER + 1> bs_inode;
@@ -70,7 +71,9 @@ void inodeInitializer() {
 			bs_inode.set(tmp.id);
 	}
 	if (bs_inode.none()) {
-		tmp = createINode(); // INode for `/`
-		; // Create dir file for `/`
+		if(createINode().id == 0) { // Create INode for `/`
+			printf("Error: Fail to create INode for '/'!\n");
+			exit(-1);
+		}
 	}
 }

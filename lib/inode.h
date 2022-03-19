@@ -12,7 +12,7 @@ struct INode
 {
 	int id; // Should be readonly
 	int size;
-	time_t createAt;
+	unsigned long long createAt;
 	int direct_addr[10];
 	int indirect_addr;
 	INode();
