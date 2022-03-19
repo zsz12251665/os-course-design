@@ -19,13 +19,13 @@ void markBlockStatus(int block, bool isFree) {
 		*(memory + block / 8) |= 1 << (block % 8);
 }
 
-bool getBlock(int addr, void* dest, int byte_cnt) {
+bool getBlock(int addr, void* des, int byte_cnt) {
 	if (!isValidAddress(addr) || isFreeBlock(addr / BLOCK_SIZE))
 		return 1;
-	memcpy(dest, memory + addr, byte_cnt);
+	memcpy(des, memory + addr, byte_cnt);
 	return 0;
 }
-bool putBlock(int addr, void* src, int byte_cnt) {
+bool putBlock(int addr, const void* src, int byte_cnt) {
 	if (!isValidAddress(addr) || addr % BLOCK_SIZE + byte_cnt > BLOCK_SIZE)
 		return 1;
 	if (isFreeBlock(addr / BLOCK_SIZE))
@@ -46,7 +46,7 @@ void memoryInitializer() {
 		fread(memory, sizeof memory, 1, f);
 		fclose(f);
 	} else {
-		memset(memory, 0, 2 * BLOCK_SIZE);
+		memset(memory, 0, MEMORY_SIZE);
 		markBlockStatus(0, false);
 		markBlockStatus(1, false);
 	}
