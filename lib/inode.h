@@ -10,20 +10,21 @@ const int INODE_MAX_NUMBER = (INODE_MEMORY_END - INODE_MEMORY_START) / INODE_SIZ
 
 struct INode
 {
-	int id; // Should be readonly
+	int num; // Should be readonly
 	int size;
-	unsigned long long createAt;
+	unsigned long long create_time;
 	int direct_addr[10];
 	int indirect_addr;
+	int type;
 	INode();
 };
 
 const INode BLANK_INODE;
 
 INode createINode();
-INode selectINode(int id);
-bool updateINode(INode n);
-bool deleteINode(int id);
+INode selectINode(int num);
+bool updateINode(const INode &inode);
+bool deleteINode(int num);
 
 void inodeInitializer();
 

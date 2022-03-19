@@ -19,7 +19,8 @@ int main() {
 
 	// Main Program
 	INode root = selectINode(1);
-	printf("%d %d %llu\n", root.id, root.size, root.createAt);
+	printf("%lu\n", sizeof root);
+	printf("%d %d %d %llu\n", root.num, root.type, root.size, root.create_time);
 	for (int i = 0; i < 10; ++i)
 		printf("%d ", root.direct_addr[i]);
 	printf("%d\n", root.indirect_addr);

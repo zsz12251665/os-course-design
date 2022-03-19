@@ -1,4 +1,5 @@
 #include "storage.h"
+#include "inode.h"
 #include <cstdio>
 #include <cstring>
 
@@ -39,6 +40,13 @@ bool freeBlock(int addr) {
 	if (!isValidAddress(addr))
 		return 1;
 	markBlockStatus(addr / BLOCK_SIZE, true); // Free the block
+	return 0;
+}
+
+int findFreeBlock() {
+	for (int i = INODE_MEMORY_END; i < MEMORY_SIZE; i += BLOCK_SIZE)
+		if (isFreeBlock(i / BLOCK_SIZE))
+			return i;
 	return 0;
 }
 

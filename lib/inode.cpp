@@ -1,77 +1,76 @@
 #include "inode.h"
 #include "storage.h"
+// #include "directory.h"
 #include <bitset>
 #include <cstdlib>
 #include <cstring>
 
-std::bitset<INODE_MAX_NUMBER + 1> bs_inode;
+std::bitset<INODE_MAX_NUMBER + 1> used_inode;
 
 INode::INode() {
-	id = 0;
-	size = 0;
-	createAt = 0;
-	memset(direct_addr, 0, sizeof direct_addr);
-	indirect_addr = 0;
+	memset(this, 0, sizeof (*this));
 }
 
-inline bool isValidINodeId(int id) {
-	return 1 <= id <= INODE_MAX_NUMBER;
+inline bool isValidINodeNumber(int num) {
+	return 1 <= num <= INODE_MAX_NUMBER;
 }
 
-int getFreeId() {
-	if (bs_inode.all())
-		return -1;
+int getFreeINodeNumber() {
+	if (used_inode.all())
+		return 0;
 	for (int i = 1; i <= INODE_MAX_NUMBER; ++i)
-		if (!bs_inode[i])
+		if (!used_inode[i])
 			return i;
-	return -1;
+	return 0;
 }
 
 INode createINode() {
 	INode res;
-	res.id = getFreeId();
-	if (!isValidINodeId(res.id))
+	res.num = getFreeINodeNumber();
+	if (!isValidINodeNumber(res.num))
 		return BLANK_INODE;
-	res.createAt = time(NULL);
-	if (putBlock(INODE_MEMORY_START + (res.id - 1) * INODE_SIZE, &res, INODE_SIZE))
+	res.create_time = time(NULL);
+	if (putBlock(INODE_MEMORY_START + (res.num - 1) * INODE_SIZE, &res, INODE_SIZE))
 		return BLANK_INODE;
-	bs_inode.set(res.id);
+	used_inode.set(res.num);
 	return res;
 }
 
-INode selectINode(int id) {
-	if (!isValidINodeId(id) || !bs_inode[id])
+INode selectINode(int num) {
+	if (!isValidINodeNumber(num) || !used_inode[num])
 		return BLANK_INODE;
 	INode res;
-	if (getBlock(INODE_MEMORY_START + (id - 1) * INODE_SIZE, &res, INODE_SIZE))
+	if (getBlock(INODE_MEMORY_START + (num - 1) * INODE_SIZE, &res, INODE_SIZE))
 		return BLANK_INODE;
 	return res;
 }
 
-bool updateINode(INode n) {
-	if (!isValidINodeId(n.id) || !bs_inode[n.id])
+bool updateINode(const INode &inode) {
+	if (!isValidINodeNumber(inode.num) || !used_inode[inode.num])
 		return 1;
-	return putBlock(INODE_MEMORY_START + (n.id - 1) * INODE_SIZE, &n, INODE_SIZE);
+	return putBlock(INODE_MEMORY_START + (inode.num - 1) * INODE_SIZE, &inode, INODE_SIZE);
 }
 
-bool deleteINode(int id) {
-	if (!isValidINodeId(id) || putBlock(INODE_MEMORY_START + (id - 1) * INODE_SIZE, &BLANK_INODE, INODE_SIZE))
+bool deleteINode(int num) {
+	if (!isValidINodeNumber(num) || putBlock(INODE_MEMORY_START + (num - 1) * INODE_SIZE, &BLANK_INODE, INODE_SIZE))
 		return 1;
-	bs_inode.reset(id);
+	used_inode.reset(num);
 	return 0;
 }
 
 void inodeInitializer() {
-	bs_inode.reset();
+	used_inode.reset();
 	INode tmp;
 	for (int i = INODE_MEMORY_START; i < INODE_MEMORY_END; i += INODE_SIZE) {
 		if (getBlock(i, &tmp, INODE_SIZE))
 			continue;
-		if (tmp.id != 0)
-			bs_inode.set(tmp.id);
+		if (tmp.num != 0)
+			used_inode.set(tmp.num);
 	}
-	if (bs_inode.none()) {
-		if(createINode().id == 0) { // Create INode for `/`
+	if (used_inode.none()) {
+		// tmp = createDir(0); // Create directory for root
+		tmp = createINode();
+		if (tmp.num == 0) {
 			printf("Error: Fail to create INode for '/'!\n");
 			exit(-1);
 		}
