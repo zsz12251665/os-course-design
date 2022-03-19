@@ -1,6 +1,6 @@
 #include <cstdio>
-#include "storage.h"
-#include "inode.h"
+#include "lib/storage.h"
+#include "lib/inode.h"
 
 int main() {
 	printf("|------------------------------|\n");
