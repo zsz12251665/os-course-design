@@ -40,7 +40,7 @@ bool freeBlock(int addr) {
 	return 0;
 }
 
-void memoryInitializer() {
+void storageInitializer() {
 	auto f = fopen("os.memory.backup", "rb");
 	if (f != NULL) {
 		fread(memory, sizeof memory, 1, f);
@@ -51,7 +51,7 @@ void memoryInitializer() {
 		markBlockStatus(1, false);
 	}
 }
-void memoryDestructor() {
+void storageDestructor() {
 	auto f = fopen("os.memory.backup", "wb");
 	fwrite(memory, sizeof memory, 1, f);
 	fclose(f);

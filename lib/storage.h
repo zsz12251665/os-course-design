@@ -8,7 +8,7 @@ bool getBlock(int addr, void* des, int byte_cnt = BLOCK_SIZE);
 bool putBlock(int addr, const void* src, int byte_cnt = BLOCK_SIZE);
 bool freeBlock(int addr);
 
-void memoryInitializer();
-void memoryDestructor();
+void storageInitializer();
+void storageDestructor();
 
 #endif // _STORAGE_H

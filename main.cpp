@@ -3,6 +3,7 @@
 #include "lib/inode.h"
 
 int main() {
+	// Welcome Screen
 	printf("|------------------------------|\n");
 	printf("|        OS Course Design      |\n");
 	printf("|------------------------------|\n");
@@ -11,7 +12,9 @@ int main() {
 	printf("|   Haohan Weng (201930251436) |\n");
 	printf("|------------------------------|\n");
 	printf("\n");
-	memoryInitializer();
+
+	// Initializers
+	storageInitializer();
 	inodeInitializer();
 
 	// Main Program
@@ -21,6 +24,7 @@ int main() {
 		printf("%d ", root.direct_addr[i]);
 	printf("%d\n", root.indirect_addr);
 
-	memoryDestructor();
+	// Destructors
+	storageDestructor();
 	return 0;
 }
