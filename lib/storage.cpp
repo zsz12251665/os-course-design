@@ -25,6 +25,7 @@ bool getBlock(int addr, void* des, int byte_cnt) {
 	memcpy(des, memory + addr, byte_cnt);
 	return 0;
 }
+
 bool putBlock(int addr, const void* src, int byte_cnt) {
 	if (!isValidAddress(addr) || addr % BLOCK_SIZE + byte_cnt > BLOCK_SIZE)
 		return 1;
@@ -33,6 +34,7 @@ bool putBlock(int addr, const void* src, int byte_cnt) {
 	memcpy(memory + addr, src, byte_cnt);
 	return 0;
 }
+
 bool freeBlock(int addr) {
 	if (!isValidAddress(addr))
 		return 1;
@@ -51,6 +53,7 @@ void storageInitializer() {
 		markBlockStatus(1, false);
 	}
 }
+
 void storageDestructor() {
 	auto f = fopen("os.memory.backup", "wb");
 	fwrite(memory, sizeof memory, 1, f);
