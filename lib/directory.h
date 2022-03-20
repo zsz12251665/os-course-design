@@ -47,7 +47,7 @@ add an entry to directory file
 2. add entry to the data block
 3. return status
 */
-bool AddDirEntry(const INode& dir_inode, char* file_name, int inode_number);
+bool AddDirEntry(INode& dir_inode, char* file_name, int inode_number);
 
 /*
 remove an entry to directory file
@@ -55,7 +55,7 @@ remove an entry to directory file
 2. remove the entry and fill it with the last entry
 3. return status
 */
-bool RemoveDirEntry(const INode& dir_inode, int inode_number);
+bool RemoveDirEntry(INode& dir_inode, int inode_number);
 
 
 
