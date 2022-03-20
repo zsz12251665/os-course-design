@@ -73,15 +73,6 @@ bool listDir(const INode& inode, std::vector<DirEntry>& entry_list) {
     return 0;
 }
 
-bool AddDirEntry(INode& dir_inode, char* file_name, int inode_number) {
-    dir_inode.size += DIR_ENTRY_SIZE;
-    DirEntry entry(inode_number, file_name);
-    int cur_addr = getLastFreeEntry(dir_inode);
-    // put the entry on the first free addr.
-    putBlock(cur_addr, &entry, DIR_ENTRY_SIZE);
-    return 0;
-}
-
 int getLastFreeEntry(const INode& dir_inode) {
     int cur_block = dir_inode.size / BLOCK_SIZE;
     int cur_addr;
@@ -97,6 +88,16 @@ int getLastFreeEntry(const INode& dir_inode) {
     }
     return cur_addr;
 }
+
+bool AddDirEntry(INode& dir_inode, const char* file_name, int inode_number) {
+    dir_inode.size += DIR_ENTRY_SIZE;
+    DirEntry entry(inode_number, file_name);
+    int cur_addr = getLastFreeEntry(dir_inode);
+    // put the entry on the first free addr.
+    putBlock(cur_addr, &entry, DIR_ENTRY_SIZE);
+    return 0;
+}
+
 
 bool RemoveDirEntry(INode& dir_inode, int inode_number) {
     dir_inode.size -= DIR_ENTRY_SIZE;

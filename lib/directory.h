@@ -47,7 +47,7 @@ add an entry to directory file
 2. add entry to the data block
 3. return status
 */
-bool AddDirEntry(INode& dir_inode, char* file_name, int inode_number);
+bool AddDirEntry(INode& dir_inode, const char* file_name, int inode_number);
 
 /*
 remove an entry to directory file
