@@ -43,6 +43,14 @@ bool freeBlock(int addr) {
 	return 0;
 }
 
+int countFreeBlock() {
+	int cnt = 0;
+	for (int i = 0 ; i < BLOCK_NUMBER; ++i)
+		if (isFreeBlock(i))
+			++cnt;
+	return cnt;
+}
+
 int findFreeBlock() {
 	for (int i = INODE_MEMORY_END; i < MEMORY_SIZE; i += BLOCK_SIZE)
 		if (isFreeBlock(i / BLOCK_SIZE))
