@@ -23,6 +23,7 @@ struct INode
 };
 
 const INode BLANK_INODE;
+extern const INode &ROOT_INODE;
 
 INode createINode();
 INode selectINode(int num);
