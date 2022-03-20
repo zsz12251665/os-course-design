@@ -4,10 +4,15 @@
 #include "storage.h"
 #include "directory.h"
 
-// create empty file
-INode createFile(INode dir_inode, const char* file_name);
+/* create an empty file
+1. create file inode
+2. add directory entry
+*/
+// INode createFile(INode dir_inode, const char* file_name);
+INode createFile(INode cwd, const char* path);
 
-bool removeFile(INode dir_inode, const char* file_name);
+// bool removeFile(INode dir_inode, const char* file_name);
+bool removeFile(INode cwd, const char* path);
 
 bool fillFile(INode& file_inode, int size); // in bytes
 
