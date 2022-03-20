@@ -1,9 +1,12 @@
 #include "inode.h"
 #include "storage.h"
-// #include "directory.h"
+#include "directory.h"
 #include <bitset>
 #include <cstdlib>
 #include <cstring>
+
+INode root_inode;
+const INode &ROOT_INODE = root_inode;
 
 std::bitset<INODE_MAX_NUMBER + 1> used_inode;
 
@@ -68,10 +71,16 @@ void inodeInitializer() {
 			used_inode.set(tmp.num);
 	}
 	if (used_inode.none()) {
-		// tmp = createDir(0); // Create directory for root
-		tmp = createINode();
+		// root_inode = createDir(0); // Create directory for root
+		root_inode = createINode();
 		if (tmp.num == 0) {
-			printf("Error: Fail to create INode for '/'!\n");
+			printf("Error: Fail to create the INode for '/'!\n");
+			exit(-1);
+		}
+	} else {
+		root_inode = selectINode(1);
+		if (root_inode.num == 0) {
+			printf("Error: Fail to select the INode for '/'!\n");
 			exit(-1);
 		}
 	}
