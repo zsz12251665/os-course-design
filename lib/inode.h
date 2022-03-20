@@ -3,6 +3,9 @@
 
 #include <ctime>
 
+#define DIR_INODE_TYPE 0
+#define FILE_INODE_TYPE 1
+
 const int INODE_SIZE = 64; // sizeof INode()
 const int INODE_MEMORY_START = 1 << 11;
 const int INODE_MEMORY_END = 1 << 20;
@@ -11,7 +14,7 @@ const int INODE_MAX_NUMBER = (INODE_MEMORY_END - INODE_MEMORY_START) / INODE_SIZ
 struct INode
 {
 	int num; // Should be readonly
-	int size;
+	int size;  // in Bytes
 	unsigned long long create_time;
 	int direct_addr[10];
 	int indirect_addr;

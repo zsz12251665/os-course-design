@@ -4,11 +4,14 @@
 #include "inode.h"
 #include "storage.h"
 
+const int DIR_ENTRY_SIZE = 64;
+
 struct DirEntry {
     int inode_number;
     char file_name[60];
+    DirEntry(int, const char*);
 };
-typedef DirEntry[16] DirBlock;
+typedef DirEntry DirBlock[16];
 
 /*
 create directory
@@ -36,7 +39,7 @@ list entries in directory
 2. get entries from data blocks
 3. return entries
 */
-std::vector<DirEntry> listDir(const INode& inode);
+bool listDir(const INode& inode, std::vector<DirEntry>& entry_list);
 
 /*
 add an entry to directory file
@@ -53,6 +56,7 @@ remove an entry to directory file
 3. return status
 */
 bool RemoveDirEntry(const INode& dir_inode, int inode_number);
+
 
 
 #endif
