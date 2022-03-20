@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "lib/storage.h"
 #include "lib/inode.h"
+#include "cmd.h"
 
 int main() {
 	// Welcome Screen
@@ -18,6 +19,7 @@ int main() {
 	inodeInitializer();
 
 	// Main Program
+	cmd::sum();
 	INode root = selectINode(1);
 	printf("%lu\n", sizeof root);
 	printf("%d %d %d %llu\n", root.num, root.type, root.size, root.create_time);
