@@ -9,41 +9,49 @@ inline bool isValidAddress(int addr) {
 	return 0 <= addr && addr < MEMORY_SIZE;
 }
 
-bool isFreeBlock(int block) {
+inline bool isFreeBlock(int block) {
 	return (*(memory + block / 8) & (1 << (block % 8))) == 0;
 }
 
-void markBlockStatus(int block, bool isFree) {
-	if (isFree)
-		*(memory + block / 8) &= ~(1 << (block % 8));
-	else
-		*(memory + block / 8) |= 1 << (block % 8);
+int occupyBlock() {
+	for (int addr = INODE_MEMORY_END; addr < MEMORY_SIZE; addr += BLOCK_SIZE)
+		if (isFreeBlock(addr / BLOCK_SIZE)) {
+			memset(memory + addr, 0, BLOCK_SIZE);
+			int block = addr / BLOCK_SIZE;
+			*(memory + block / 8) |= 1 << (block % 8);
+			return addr;
+		}
+	throw StorageError({MEMORY_SIZE, "Cannot find a free block!", "occupyBlock"});
 }
 
-bool getBlock(int addr, void* des, int byte_cnt) {
-	if (!isValidAddress(addr) || isFreeBlock(addr / BLOCK_SIZE))
-		return 1;
-	memcpy(des, memory + addr, byte_cnt);
-	return 0;
-}
-
-bool putBlock(int addr, const void* src, int byte_cnt) {
-	if (!isValidAddress(addr) || addr % BLOCK_SIZE + byte_cnt > BLOCK_SIZE)
-		return 1;
-	if (isFreeBlock(addr / BLOCK_SIZE))
-		markBlockStatus(addr / BLOCK_SIZE, false); // Occupy the block
-	memcpy(memory + addr, src, byte_cnt);
-	return 0;
-}
-
-bool freeBlock(int addr) {
+void freeBlock(int addr) {
 	if (!isValidAddress(addr))
-		return 1;
-	markBlockStatus(addr / BLOCK_SIZE, true); // Free the block
-	return 0;
+		throw StorageError({addr, "Address is invalid!", "freeBlock"});
+	int block = addr / BLOCK_SIZE;
+	*(memory + block / 8) &= ~(1 << (block % 8));
 }
 
-int countFreeBlock() {
+void getBlock(int addr, void* des, int byte_cnt) {
+	if (!isValidAddress(addr))
+		throw StorageError({addr, "Address is invalid!", "getBlock"});
+	if (isFreeBlock(addr / BLOCK_SIZE))
+		throw StorageError({addr, "Target block is not occupied!", "getBlock"});
+	if (addr % BLOCK_SIZE + byte_cnt > BLOCK_SIZE)
+		throw StorageError({addr, "Content overflows the block!", "getBlock"});
+	memcpy(des, memory + addr, byte_cnt);
+}
+
+void putBlock(int addr, const void* src, int byte_cnt) {
+	if (!isValidAddress(addr))
+		throw StorageError({addr, "Address is invalid!", "putBlock"});
+	if (isFreeBlock(addr / BLOCK_SIZE))
+		throw StorageError({addr, "Target block is not occupied!", "putBlock"});
+	if (addr % BLOCK_SIZE + byte_cnt > BLOCK_SIZE)
+		throw StorageError({addr, "Content overflows the block!", "putBlock"});
+	memcpy(memory + addr, src, byte_cnt);
+}
+
+int countFreeBlocks() {
 	int cnt = 0;
 	for (int i = 0 ; i < BLOCK_NUMBER; ++i)
 		if (isFreeBlock(i))
@@ -51,27 +59,21 @@ int countFreeBlock() {
 	return cnt;
 }
 
-int findFreeBlock() {
-	for (int i = INODE_MEMORY_END; i < MEMORY_SIZE; i += BLOCK_SIZE)
-		if (isFreeBlock(i / BLOCK_SIZE))
-			return i;
-	return 0;
-}
-
 void storageInitializer() {
 	auto f = fopen("os.memory.backup", "rb");
 	if (f != NULL) {
-		fread(memory, sizeof memory, 1, f);
+		fread(memory, MEMORY_SIZE, 1, f);
 		fclose(f);
 	} else {
 		memset(memory, 0, MEMORY_SIZE);
-		markBlockStatus(0, false);
-		markBlockStatus(1, false);
+		// Reserve blocks for block bitset & INode area
+		for (int block = 0; block < INODE_MEMORY_END / BLOCK_SIZE; ++block)
+			*(memory + block / 8) |= 1 << (block % 8);
 	}
 }
 
 void storageDestructor() {
 	auto f = fopen("os.memory.backup", "wb");
-	fwrite(memory, sizeof memory, 1, f);
+	fwrite(memory, MEMORY_SIZE, 1, f);
 	fclose(f);
 }
