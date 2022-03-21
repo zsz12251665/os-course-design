@@ -1,6 +1,6 @@
 #include "inode.h"
 #include "storage.h"
-#include "file.h"
+#include "directory.h"
 #include <bitset>
 #include <cstring>
 
@@ -26,6 +26,25 @@ int getFreeINodeNumber() {
 
 INode::INode() {
 	memset(this, 0, sizeof (*this));
+}
+
+int INode::convertAddress(int logic_addr, AddrBlock cache) {
+	if (logic_addr < 0 || logic_addr >= this->size)
+		throw INodeError({this->num, "Logical address is invalid!", "INode::convertAddress"});
+	int block_num = logic_addr / BLOCK_SIZE, block_offset = logic_addr % BLOCK_SIZE;
+	if (block_num < 10)
+		return this->direct_addr[block_num] + block_offset;
+	else {
+		if (cache == nullptr) {
+			AddrBlock addr_block;
+			getBlock(this->indirect_addr, addr_block);
+			return addr_block[block_num - 10] + block_offset;
+		} else {
+			if (cache[0] == 0)
+				getBlock(this->indirect_addr, cache);
+			return cache[block_num - 10] + block_offset;
+		}
+	}
 }
 
 INode createINode() {

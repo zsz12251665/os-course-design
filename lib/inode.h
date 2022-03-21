@@ -15,6 +15,8 @@ struct INodeError {
 	const char* when;
 };
 
+typedef int AddrBlock[256];
+
 struct INode
 {
 	int num; // Should be readonly
@@ -24,9 +26,8 @@ struct INode
 	int indirect_addr;
 	int type;
 	INode();
+	int convertAddress(int logic_addr, AddrBlock cache = nullptr); // Convert logical address (0~size) to physical address in memory
 };
-
-typedef int AddrBlock[256];
 
 const INode BLANK_INODE;
 extern const INode &ROOT_INODE;
