@@ -75,7 +75,7 @@ int main() {
 		} else {
 			printf("Error: Unknown command \"%s\"!\n", command);
 		}
-		while(getchar() != '\n'); // Clear the rest of the line in stdin
+		while (getchar() != '\n'); // Clear the rest of the line in stdin
 	}
 
 	// Destructors
