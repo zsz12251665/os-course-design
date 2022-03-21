@@ -9,7 +9,7 @@ DirEntry::DirEntry(int inode_number, const char* file_name) {
 INode createDir(int parent_inode_number) {
     INode dir = createINode();
     int data_addr = findFreeBlock();
-    if (data_addr == 0) 
+    if (data_addr == 0)
         return dir;
     dir.size = 128;
     dir.direct_addr[0] = data_addr;
@@ -28,7 +28,6 @@ INode createDir(int parent_inode_number) {
 bool deleteDir(const INode& inode) {
     //! only empty directory is allowed to delete
 
-
     // free data block
     for (int i = 0; i < 10; ++i) {
         if (inode.direct_addr[i] != 0) {
@@ -36,7 +35,7 @@ bool deleteDir(const INode& inode) {
         }
     }
     int pDes[BLOCK_SIZE / 4];
-    if (inode.indirect_addr != 0 && 
+    if (inode.indirect_addr != 0 &&
         getBlock(inode.indirect_addr, pDes) == 0) {
         for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
             if (pDes[i] != 0)
@@ -60,7 +59,7 @@ bool listDir(const INode& inode, std::vector<DirEntry>& entry_list) {
         }
     }
     int pAddr[BLOCK_SIZE / 4];
-    if (inode.indirect_addr != 0 && 
+    if (inode.indirect_addr != 0 &&
         getBlock(inode.indirect_addr, pAddr) == 0) {
         for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
             if (pAddr[i] != 0) {
@@ -78,14 +77,14 @@ int getLastFreeEntry(const INode& dir_inode) {
     int cur_block = dir_inode.size / BLOCK_SIZE;
     int cur_addr;
     if (cur_block < 10) {
-        cur_addr = dir_inode.direct_addr[cur_block] 
+        cur_addr = dir_inode.direct_addr[cur_block]
                         + (dir_inode.size - cur_block * BLOCK_SIZE);
     } else {
         int pDes[BLOCK_SIZE / 4];
         if (getBlock(dir_inode.indirect_addr, pDes) == 0) {
-            cur_addr = pDes[cur_block - 10] 
+            cur_addr = pDes[cur_block - 10]
                             + (dir_inode.size - cur_block * BLOCK_SIZE);
-        }   
+        }
     }
     return cur_addr;
 }
@@ -98,7 +97,6 @@ bool AddDirEntry(INode& dir_inode, const char* file_name, int inode_number) {
     putBlock(cur_addr, &entry, DIR_ENTRY_SIZE);
     return 0;
 }
-
 
 bool RemoveDirEntry(INode& dir_inode, int inode_number) {
     dir_inode.size -= DIR_ENTRY_SIZE;
@@ -121,7 +119,7 @@ bool RemoveDirEntry(INode& dir_inode, int inode_number) {
         }
     }
     int pAddr[BLOCK_SIZE / 4];
-    if (dir_inode.indirect_addr != 0 && 
+    if (dir_inode.indirect_addr != 0 &&
         getBlock(dir_inode.indirect_addr, pAddr) == 0) {
         for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
             if (pAddr[i] != 0) {
@@ -160,7 +158,7 @@ INode getEntryINode(INode& dir_inode, const char* filename)  {
         }
     }
     int pAddr[BLOCK_SIZE / 4];
-    if (dir_inode.indirect_addr != 0 && 
+    if (dir_inode.indirect_addr != 0 &&
         getBlock(dir_inode.indirect_addr, pAddr) == 0) {
         for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
             if (pAddr[i] != 0) {
@@ -175,5 +173,5 @@ INode getEntryINode(INode& dir_inode, const char* filename)  {
         }
     }
 
-    return BLANK_INODE; // can not find such a inode  
+    return BLANK_INODE; // can not find such a inode
 }
