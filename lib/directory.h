@@ -1,5 +1,5 @@
-#ifndef _DIRCTORY_H
-#define _DIRCTORY_H
+#ifndef _DIRECTORY_H
+#define _DIRECTORY_H
 #include <vector>
 #include "inode.h"
 #include "storage.h"
@@ -57,6 +57,8 @@ remove an entry to directory file
 */
 bool RemoveDirEntry(INode& dir_inode, int inode_number);
 
+/* return the inode of given filename
+*/
+INode getEntryINode(INode& dir_inode, const char* filename);
 
-
-#endif
+#endif // _DIRECTORY_H

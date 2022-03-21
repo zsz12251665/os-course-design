@@ -2,7 +2,6 @@
 #define _FILE_H
 #include "inode.h"
 #include "storage.h"
-#include "directory.h"
 
 /* create an empty file
 1. create file inode
@@ -20,6 +19,6 @@ bool copyFile(const INode& src_inode, INode& des_inode);
 
 INode getFileINode(INode cwd, const char* path);
 
-
+INode getDirINode(INode cwd, const char* path);
 
 #endif

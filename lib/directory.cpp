@@ -14,6 +14,7 @@ INode createDir(int parent_inode_number) {
     dir.size = 128;
     dir.direct_addr[0] = data_addr;
     dir.type = DIR_INODE_TYPE;
+    updateINode(dir);
 
     // write . and .. into directory table
     DirEntry cur(dir.num, ".");
@@ -101,6 +102,7 @@ bool AddDirEntry(INode& dir_inode, const char* file_name, int inode_number) {
 
 bool RemoveDirEntry(INode& dir_inode, int inode_number) {
     dir_inode.size -= DIR_ENTRY_SIZE;
+    updateINode(dir_inode);
     int cur_addr = getLastFreeEntry(dir_inode);
     char pDes[DIR_ENTRY_SIZE];
     getBlock(cur_addr, pDes, DIR_ENTRY_SIZE);
@@ -136,4 +138,42 @@ bool RemoveDirEntry(INode& dir_inode, int inode_number) {
     }
 
     return 1; // can not find such a inode
+}
+
+INode getEntryINode(INode& dir_inode, const char* filename)  {
+    dir_inode.size -= DIR_ENTRY_SIZE;
+    updateINode(dir_inode);
+    int cur_addr = getLastFreeEntry(dir_inode);
+    char pDes[DIR_ENTRY_SIZE];
+    getBlock(cur_addr, pDes, DIR_ENTRY_SIZE);
+
+    char pData[BLOCK_SIZE];
+    for (int i = 0; i < 10; ++i) {
+        if (dir_inode.direct_addr[i] != 0) {
+            getBlock(dir_inode.direct_addr[i], pData);
+            for (int j = 0; j < BLOCK_SIZE; j += DIR_ENTRY_SIZE) {
+                DirEntry entry = *(DirEntry*)(pData + j);
+                if (entry.file_name == filename) {
+                    return selectINode(entry.inode_number);
+                }
+            }
+        }
+    }
+    int pAddr[BLOCK_SIZE / 4];
+    if (dir_inode.indirect_addr != 0 && 
+        getBlock(dir_inode.indirect_addr, pAddr) == 0) {
+        for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
+            if (pAddr[i] != 0) {
+                getBlock(pAddr[i], pData);
+                for (int j = 0; j < BLOCK_SIZE; j += DIR_ENTRY_SIZE) {
+                    DirEntry entry = *(DirEntry*)(pData + j);
+                    if (entry.file_name == filename) {
+                        return selectINode(entry.inode_number);
+                    }
+                }
+            }
+        }
+    }
+
+    return BLANK_INODE; // can not find such a inode  
 }
