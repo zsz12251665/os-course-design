@@ -1,3 +1,5 @@
+const int PATH_MAX_LENGTH = 1 << 8;
+
 namespace cmd {
 	void createFile(const char* filename, int size);
 	void deleteFile(const char* filename);
@@ -9,3 +11,5 @@ namespace cmd {
 	void sum();
 	void cat(const char* filename);
 }
+
+void commandInitializer();
