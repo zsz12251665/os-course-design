@@ -1,10 +1,36 @@
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <ctime>
 #include "lib/storage.h"
 #include "lib/inode.h"
 #include "cmd.h"
+
+const int PATH_MAX_LENGTH = 1 << 8;
+
+void normalizePath(char* path) {
+	int len = strlen(path);
+	while (len > 1 && path[len - 1] == '/') {
+		path[len - 1] = '\0';
+		--len;
+	}
+	while (len > 1 && path[len - 1] == '.') {
+		if (path[len - 2] == '/') {
+			path[len == 2 ? 1 : len - 2] = '\0';
+			len -= 2;
+		} else if (path[len - 2] == '.' && path[len - 3] == '/') {
+			int pos = len - 4;
+			while (pos >= 0 && path[pos] != '/')
+				--pos;
+			if (pos < 0) {
+				strcpy(path, ".");
+				break;
+			} else {
+				path[pos == 0 ? 1 : pos] = '\0';
+				len = pos;
+			}
+		} else
+			break;
+	}
+}
 
 int main() {
 	// Welcome Screen
@@ -18,7 +44,6 @@ int main() {
 	printf("\n");
 
 	// Initializers
-	srand(time(NULL));
 	storageInitializer();
 	inodeInitializer();
 	commandInitializer();
@@ -35,26 +60,31 @@ int main() {
 			char filename[PATH_MAX_LENGTH];
 			int size;
 			scanf("%s%d", filename, &size);
+			normalizePath(filename);
 			cmd::createFile(filename, size);
 		} else
 		if (strcmp(command, "deleteFile") == 0) {
 			char filename[PATH_MAX_LENGTH];
 			scanf("%s", filename);
+			normalizePath(filename);
 			cmd::deleteFile(filename);
 		} else
 		if (strcmp(command, "createDir") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
+			normalizePath(dirname);
 			cmd::createDir(dirname);
 		} else
 		if (strcmp(command, "deleteDir") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
+			normalizePath(dirname);
 			cmd::deleteDir(dirname);
 		} else
 		if (strcmp(command, "changeDir") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
+			normalizePath(dirname);
 			cmd::changeDir(dirname);
 		} else
 		if (strcmp(command, "dir") == 0) {
@@ -63,6 +93,8 @@ int main() {
 		if (strcmp(command, "cp") == 0) {
 			char src[PATH_MAX_LENGTH], des[PATH_MAX_LENGTH];
 			scanf("%s%s", src, des);
+			normalizePath(src);
+			normalizePath(des);
 			cmd::cp(src, des);
 		} else
 		if (strcmp(command, "sum") == 0) {
@@ -71,7 +103,11 @@ int main() {
 		if (strcmp(command, "cat") == 0) {
 			char filename[PATH_MAX_LENGTH];
 			scanf("%s", filename);
+			normalizePath(filename);
 			cmd::cat(filename);
+		} else
+		if (strcmp(command, "exit") == 0) {
+			break;
 		} else {
 			printf("Error: Unknown command \"%s\"!\n", command);
 		}
