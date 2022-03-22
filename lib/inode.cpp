@@ -4,16 +4,13 @@
 #include <bitset>
 #include <cstring>
 
-INode root_inode;
-const INode &ROOT_INODE = root_inode;
-
 std::bitset<INODE_MAX_NUMBER + 1> used_inode;
 
 inline bool isValidINodeNumber(int num) {
 	return 1 <= num <= INODE_MAX_NUMBER;
 }
 
-inline bool getINodeAddress(int num) {
+inline int getINodeAddress(int num) {
 	return INODE_MEMORY_START + (num - 1) * INODE_SIZE;
 }
 
@@ -92,9 +89,8 @@ void inodeInitializer() {
 		if (tmp.num != 0)
 			used_inode.set(tmp.num);
 	}
-	if (used_inode.none()) {
-		root_inode = createINode();
+	if (used_inode.count() == 1) {
+		INode root_inode = createINode();
 		initDir(root_inode);
-	} else
-		root_inode = selectINode(1); // the Inode number for / is always 1
+	}
 }
