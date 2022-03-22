@@ -26,7 +26,7 @@ struct INode
 	int indirect_addr;
 	int type;
 	INode();
-	int convertAddress(int logic_addr, AddrBlock cache = nullptr); // Convert logical address (0~size) to physical address in memory
+	int convertAddress(int logic_addr, AddrBlock cache = nullptr) const; // Convert logical address (0~size) to physical address in memory
 };
 
 const INode BLANK_INODE;

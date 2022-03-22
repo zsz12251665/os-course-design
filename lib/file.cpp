@@ -1,150 +1,128 @@
 #include "file.h"
+#include "storage.h"
 #include "directory.h"
-#include <assert.h>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 
-int getNextEntry(const char* path) {
-    for (int i = 0; i < strlen(path); ++i) {
-        if (path[i] == '/') {
-            return i;
-        }
-    }
-    return strlen(path);
+INode createFile(INode &dir_inode, const char *filename) {
+	INode file_inode = createINode();
+	addDirEntry(dir_inode, file_inode.num, filename);
+	return file_inode;
 }
 
-const char* getFilename(const char* path) {
-	int len = strlen(path);
-	for (int i = len - 1; i >= 0; ++i)
-		if (path[i] == '/')
-			return path + i + 1;
-	return path;
+void deleteFile(INode &dir_inode, const char *filename) {
+	INode file_inode = getFileINode(dir_inode, filename);
+	int block_cnt = (file_inode.size + BLOCK_SIZE - 1) / BLOCK_SIZE;
+	for (int i = 0; i < 10 && i < block_cnt; ++i)
+		freeBlock(file_inode.direct_addr[i]);
+	if (block_cnt > 10) {
+		AddrBlock addr_block;
+		getBlock(file_inode.indirect_addr, addr_block);
+		for (int i = 10; i < block_cnt; ++i)
+			freeBlock(addr_block[i - 10]);
+		freeBlock(file_inode.indirect_addr);
+	}
+	deleteINode(file_inode.num);
+	removeDirEntry(dir_inode, filename);
 }
 
-INode getFileINode(INode cwd, const char* path) {
+void fillFile(INode &file_inode, int size) {
+	if (size > BLOCK_SIZE * 266) // 10 direct block + 256 indirect block
+		throw DirectoryError({"The file is too big to fill!", "fillFile"});
+	file_inode.type = FILE_INODE_TYPE;
+	file_inode.size = size;
+	char data_block[BLOCK_SIZE];
+	AddrBlock addr_block;
+	for (int i = 0; i * BLOCK_SIZE < size; ++i) {
+		memset(data_block, 0, BLOCK_SIZE);
+		for (int j = 0; j < size - i * BLOCK_SIZE && j < BLOCK_SIZE; ++j)
+			data_block[j] = 32 + rand() % (127 - 32); // ASCII 32~126
+		if (i < 10) {
+			file_inode.direct_addr[i] = occupyBlock();
+			putBlock(file_inode.direct_addr[i], data_block);
+		} else {
+			if (file_inode.indirect_addr == 0) {
+				file_inode.indirect_addr = occupyBlock();
+				memset(addr_block, 0, BLOCK_SIZE);
+			}
+			addr_block[i - 10] = occupyBlock();
+			putBlock(addr_block[i - 10], data_block);
+		}
+	}
+	if (file_inode.indirect_addr != 0)
+		putBlock(file_inode.indirect_addr, addr_block);
+	updateINode(file_inode);
+}
+
+void copyFile(const INode &src_inode, INode &des_inode) {
+	des_inode.type = src_inode.type;
+	des_inode.size = src_inode.size;
+	char data_block[BLOCK_SIZE];
+	for (int i = 0; i < 10 && i * BLOCK_SIZE < src_inode.size; ++i) {
+		getBlock(src_inode.direct_addr[i], data_block);
+		des_inode.direct_addr[i] = occupyBlock();
+		putBlock(des_inode.direct_addr[i], data_block);
+	}
+	if (src_inode.size > 10 * BLOCK_SIZE) {
+		AddrBlock addr_block;
+		getBlock(src_inode.indirect_addr, addr_block);
+		for (int i = 10; i * BLOCK_SIZE < src_inode.size; ++i) {
+			getBlock(addr_block[i - 10], data_block);
+			addr_block[i - 10] = occupyBlock();
+			putBlock(addr_block[i - 10], data_block);
+		}
+		des_inode.indirect_addr = occupyBlock();
+		putBlock(des_inode.indirect_addr, addr_block);
+	}
+	updateINode(des_inode);
+}
+
+INode getFileINode(const INode &cwd_inode, const char *path) {
+	if (cwd_inode.type != DIR_INODE_TYPE)
+		return BLANK_INODE;
     if (path[0] == '/') {
-        return getFileINode(ROOT_INODE, path + 1);
+        return path[1] == '\0' ? ROOT_INODE : getFileINode(ROOT_INODE, path + 1);
     } else {
-        char entry_name[256];
-        strcpy(entry_name, path);
-        int idx = getNextEntry(path);
-        entry_name[idx] = '\0';
-        INode entry_inode = getEntryINode(cwd, entry_name);
-        if (idx == strlen(path)) {
-            return entry_inode;
-        }
-        if(entry_inode.num == 0)
-            return BLANK_INODE;
-        return getFileINode(entry_inode, path + idx + 1);
+		AddrBlock cache;
+		cache[0] = 0;
+		for (int logic_addr = 0; logic_addr < cwd_inode.size; logic_addr += DIR_ENTRY_SIZE) {
+			DirEntry entry;
+			getBlock(cwd_inode.convertAddress(logic_addr, cache), &entry, DIR_ENTRY_SIZE);
+			int len = strlen(entry.filename);
+			if (strncmp(entry.filename, path, len) == 0) {
+				if (path[len] == '\0')
+					return selectINode(entry.inode_num);
+				if (path[len] == '/')
+					return getFileINode(selectINode(entry.inode_num), path + len + 1);
+			}
+		}
     }
+	return BLANK_INODE;
 }
 
-INode getDirINode(INode cwd, const char* path) {
-    char new_path[256];
-    strcpy(new_path, path);
-    for (int i = strlen(path) - 1; i >= 0; --i) {
-        if (path[i] == '/') {
-            new_path[i] == '\0';
-            break;
-        }
+INode getDirINode(const INode &cwd_inode, const char *path) {
+	if (cwd_inode.type != DIR_INODE_TYPE)
+		return BLANK_INODE;
+	for (int i = 0, len = strlen(path); i <= len; ++i) {
+		if (path[i] == '/')
+			break;
+		if (path[i] == '\0')
+			return cwd_inode;
+	}
+    if (path[0] == '/') {
+        return path[1] == '\0' ? BLANK_INODE : getDirINode(ROOT_INODE, path + 1);
+    } else {
+		AddrBlock cache;
+		cache[0] = 0;
+		for (int logic_addr = 0; logic_addr < cwd_inode.size; logic_addr += DIR_ENTRY_SIZE) {
+			DirEntry entry;
+			getBlock(cwd_inode.convertAddress(logic_addr, cache), &entry, DIR_ENTRY_SIZE);
+			int len = strlen(entry.filename);
+			if (strncmp(entry.filename, path, len) == 0) {
+				if (path[len] == '/')
+					return getDirINode(selectINode(entry.inode_num), path + len + 1);
+			}
+		}
     }
-    strcat(new_path, "/.");
-    return getFileINode(cwd, new_path);
-}
-
-INode createFile(INode cwd, const char* path) {
-    INode file_inode = createINode();
-    INode dir_inode = getDirINode(cwd, path);
-    AddDirEntry(dir_inode, getFilename(path), file_inode.num);
-    return file_inode;
-}
-
-bool fillFile(INode& file_inode, int size) {
-    assert(size % BLOCK_SIZE == 0);
-    file_inode.size = size;
-    file_inode.type = FILE_INODE_TYPE;
-    updateINode(file_inode);
-
-    int data_addr, addr_addr;
-    char random_data[BLOCK_SIZE];
-    for (int i = 0; i < size / BLOCK_SIZE; ++i) {
-        data_addr = findFreeBlock();
-        for(int j = 0; j < BLOCK_SIZE; ++j) {
-            random_data[i] = char(rand() % (127 - 32) + 32); // 32 - 126
-        }
-        putBlock(data_addr, random_data);
-        if (i < 10)
-            file_inode.direct_addr[i] = data_addr;
-        else if (i == 10) {
-            int indirect_addr = findFreeBlock();
-            putBlock(indirect_addr, &data_addr, 4);
-            file_inode.indirect_addr = indirect_addr;
-        } else {
-            addr_addr = findFreeBlock();
-            putBlock(file_inode.indirect_addr + 4 * (i - 10), &addr_addr, 4);
-        }
-    }
-    return 0;
-}
-
-bool removeFile(INode cwd, const char* path) {
-    INode file_inode = getFileINode(cwd, path);
-    // free data block
-    for (int i = 0; i < 10; ++i) {
-        if (file_inode.direct_addr[i] != 0) {
-            freeBlock(file_inode.direct_addr[i]);
-        }
-    }
-    int pDes[BLOCK_SIZE / 4];
-    if (file_inode.indirect_addr != 0 &&
-        getBlock(file_inode.indirect_addr, pDes) == 0) {
-        for (int i = 0; i < BLOCK_SIZE / 4; ++i) {
-            if (pDes[i] != 0)
-                freeBlock(pDes[i]);
-        }
-    }
-
-    INode dir_inode = getDirINode(cwd, path);
-    // delete dir entry
-    RemoveDirEntry(dir_inode, file_inode.num);
-
-    // free inode
-    deleteINode(file_inode.num);
-
-    return 0;
-}
-
-bool copyFile(const INode& src_inode, INode& des_inode) {
-    int size = src_inode.size;
-    des_inode.size = size;
-    des_inode.type = src_inode.type;
-    updateINode(des_inode);
-
-    int data_addr, addr_addr;
-    char src_data[BLOCK_SIZE];
-    int pDes[BLOCK_SIZE / 4];
-    if (size / BLOCK_SIZE >= 10) {
-        getBlock(src_inode.indirect_addr, pDes);
-    }
-
-    for (int i = 0; i < size / BLOCK_SIZE; ++i) {
-        data_addr = findFreeBlock();
-        // read data from src
-        if (i < 10) {
-            getBlock(src_inode.direct_addr[i], src_data);
-            putBlock(data_addr, src_data);
-            des_inode.direct_addr[i] = data_addr;
-        } else if (i == 10) {
-            getBlock(pDes[i - 10], src_data);
-            putBlock(data_addr, src_data);
-            int addr_addr = findFreeBlock();
-            putBlock(addr_addr, &data_addr, 4);
-            des_inode.indirect_addr = addr_addr;
-        } else {
-            getBlock(pDes[i - 10], src_data);
-            putBlock(data_addr, src_data);
-            putBlock(des_inode.indirect_addr + 4 * (i - 10), &data_addr, 4);
-        }
-    }
-    return 0;
+	return BLANK_INODE;
 }

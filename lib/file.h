@@ -1,24 +1,15 @@
 #ifndef _FILE_H
 #define _FILE_H
+
 #include "inode.h"
-#include "storage.h"
 
-/* create an empty file
-1. create file inode
-2. add directory entry
-*/
-// INode createFile(INode dir_inode, const char* file_name);
-INode createFile(INode cwd, const char* path);
+INode createFile(INode &dir_inode, const char *filename);
+void deleteFile(INode &dir_inode, const char *filename);
 
-// bool removeFile(INode dir_inode, const char* file_name);
-bool removeFile(INode cwd, const char* path);
+void fillFile(INode &file_inode, int size); // size measured in bytes
+void copyFile(const INode &src_inode, INode &des_inode);
 
-bool fillFile(INode& file_inode, int size); // in bytes
+INode getFileINode(const INode &cwd_inode, const char *path); // Path should not end with / unless it is root
+INode getDirINode(const INode &cwd_inode, const char *path);
 
-bool copyFile(const INode& src_inode, INode& des_inode);
-
-INode getFileINode(INode cwd, const char* path);
-
-INode getDirINode(INode cwd, const char* path);
-
-#endif
+#endif // _FILE_H

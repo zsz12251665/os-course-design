@@ -28,7 +28,7 @@ INode::INode() {
 	memset(this, 0, sizeof (*this));
 }
 
-int INode::convertAddress(int logic_addr, AddrBlock cache) {
+int INode::convertAddress(int logic_addr, AddrBlock cache) const {
 	if (logic_addr < 0 || logic_addr >= this->size)
 		throw INodeError({this->num, "Logical address is invalid!", "INode::convertAddress"});
 	int block_num = logic_addr / BLOCK_SIZE, block_offset = logic_addr % BLOCK_SIZE;
