@@ -21,6 +21,7 @@ const char* getFilename(const char* path) {
 void cmd::createFile(const char* filename, int size) {
 	if (size > 266) {
 		printf("Error: The file is too big!\n");
+		return;
 	}
 	if (countFreeBlocks() < (size > 10 ? size + 1 : size)) {
 		printf("Error: Not enough space!\n");
@@ -37,6 +38,7 @@ void cmd::createFile(const char* filename, int size) {
 	}
 	if (getFileINode(selectINode(cwd_inode_num), filename).num != 0) {
 		printf("Error: \"%s\" already exists!\n", filename);
+		return;
 	}
 	INode file_inode = createFile(dir_inode, getFilename(filename));
 	fillFile(file_inode, size * 1024);
@@ -72,6 +74,7 @@ void cmd::createDir(const char* dirname) {
 	}
 	if (getFileINode(selectINode(cwd_inode_num), dirname).num != 0) {
 		printf("Error: \"%s\" already exists!\n", dirname);
+		return;
 	}
 	INode file_inode = createFile(dir_inode, getFilename(dirname));
 	initDir(file_inode, dir_inode.num);
