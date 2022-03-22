@@ -119,7 +119,7 @@ void cmd::changeDir(const char* dirname) {
 void cmd::dir() {
 	AddrBlock cache;
 	INode cwd_inode = selectINode(cwd_inode_num);
-	printf("   Type              Create Time  Size Filename\n");
+	printf("   Type              Create Time     Size Filename\n");
 	for (int logic_addr = 0; logic_addr < cwd_inode.size; logic_addr += DIR_ENTRY_SIZE) {
 		DirEntry entry;
 		getBlock(cwd_inode.convertAddress(logic_addr, cache), &entry, DIR_ENTRY_SIZE);
@@ -129,7 +129,7 @@ void cmd::dir() {
 			: "UNKNOWN";
 		auto create_time = ctime((time_t*)&inode.create_time);
 		create_time[strlen(create_time) - 1] = '\0';
-		printf("%7s %24s %5d %s\n", type_str, create_time, inode.size, entry.filename);
+		printf("%7s %24s %8d %s\n", type_str, create_time, inode.size, entry.filename);
 	}
 }
 

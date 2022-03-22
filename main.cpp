@@ -56,57 +56,67 @@ int main() {
 			putchar('\n');
 			break;
 		}
-		if (strcmp(command, "createFile") == 0) {
+		if (strcmp(command, "createFile") == 0
+		|| strcmp(command, "new") == 0) {
 			char filename[PATH_MAX_LENGTH];
 			int size;
 			scanf("%s%d", filename, &size);
 			normalizePath(filename);
 			cmd::createFile(filename, size);
 		} else
-		if (strcmp(command, "deleteFile") == 0) {
+		if (strcmp(command, "deleteFile") == 0
+		|| strcmp(command, "rm") == 0) {
 			char filename[PATH_MAX_LENGTH];
 			scanf("%s", filename);
 			normalizePath(filename);
 			cmd::deleteFile(filename);
 		} else
-		if (strcmp(command, "createDir") == 0) {
+		if (strcmp(command, "createDir") == 0
+		|| strcmp(command, "mkdir") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
 			normalizePath(dirname);
 			cmd::createDir(dirname);
 		} else
-		if (strcmp(command, "deleteDir") == 0) {
+		if (strcmp(command, "deleteDir") == 0
+		|| strcmp(command, "rmdir") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
 			normalizePath(dirname);
 			cmd::deleteDir(dirname);
 		} else
-		if (strcmp(command, "changeDir") == 0) {
+		if (strcmp(command, "changeDir") == 0
+		|| strcmp(command, "cd") == 0) {
 			char dirname[PATH_MAX_LENGTH];
 			scanf("%s", dirname);
 			normalizePath(dirname);
 			cmd::changeDir(dirname);
 		} else
-		if (strcmp(command, "dir") == 0) {
+		if (strcmp(command, "dir") == 0
+		|| strcmp(command, "ls") == 0) {
 			cmd::dir();
 		} else
-		if (strcmp(command, "cp") == 0) {
+		if (strcmp(command, "cp") == 0
+		|| strcmp(command, "copy") == 0) {
 			char src[PATH_MAX_LENGTH], des[PATH_MAX_LENGTH];
 			scanf("%s%s", src, des);
 			normalizePath(src);
 			normalizePath(des);
 			cmd::cp(src, des);
 		} else
-		if (strcmp(command, "sum") == 0) {
+		if (strcmp(command, "sum") == 0
+		|| strcmp(command, "df") == 0) {
 			cmd::sum();
 		} else
-		if (strcmp(command, "cat") == 0) {
+		if (strcmp(command, "cat") == 0
+		|| strcmp(command, "print") == 0) {
 			char filename[PATH_MAX_LENGTH];
 			scanf("%s", filename);
 			normalizePath(filename);
 			cmd::cat(filename);
 		} else
-		if (strcmp(command, "exit") == 0) {
+		if (strcmp(command, "exit") == 0
+		|| strcmp(command, "quit") == 0) {
 			break;
 		} else {
 			printf("Error: Unknown command \"%s\"!\n", command);

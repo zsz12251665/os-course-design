@@ -3,6 +3,7 @@
 #include "directory.h"
 #include <bitset>
 #include <cstring>
+#include <ctime>
 
 std::bitset<INODE_MAX_NUMBER + 1> used_inode;
 
