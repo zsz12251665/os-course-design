@@ -12,35 +12,18 @@ void normalizePath(char* path) {
 		path[len - 1] = '\0';
 		--len;
 	}
-	while (len > 1 && path[len - 1] == '.') {
-		if (path[len - 2] == '/') {
-			path[len == 2 ? 1 : len - 2] = '\0';
-			len -= 2;
-		} else if (path[len - 2] == '.' && path[len - 3] == '/') {
-			int pos = len - 4;
-			while (pos >= 0 && path[pos] != '/')
-				--pos;
-			if (pos < 0) {
-				strcpy(path, ".");
-				break;
-			} else {
-				path[pos == 0 ? 1 : pos] = '\0';
-				len = pos;
-			}
-		} else
-			break;
-	}
 }
 
 int main() {
 	// Welcome Screen
-	printf("|------------------------------|\n");
-	printf("|        OS Course Design      |\n");
-	printf("|------------------------------|\n");
-	printf("| Contributor:                 |\n");
-	printf("|   Sizhe Zhong (201936234136) |\n");
-	printf("|   Haohan Weng (201930251436) |\n");
-	printf("|------------------------------|\n");
+	printf("|--------------------------------|\n");
+	printf("|        OS Course Design        |\n");
+	printf("|--------------------------------|\n");
+	printf("| Contributor:                   |\n");
+	printf("|   Sizhe Zhong (201936234136)   |\n");
+	printf("|   Haohan Weng (201930251436)   |\n");
+	printf("|   Hongqiao Lian (201930342141) |\n");
+	printf("|--------------------------------|\n");
 	printf("\n");
 
 	// Initializers

@@ -150,6 +150,10 @@ void cmd::cp(const char* src, const char* des) {
 		printf("Error: Not enough space!\n");
 		return;
 	}
+	if (getFileINode(selectINode(cwd_inode_num), des).num != 0) {
+		printf("Error: \"%s\" already exists!\n", des);
+		return;
+	}
 	INode dir_inode = getDirINode(selectINode(cwd_inode_num), des);
 	INode des_inode = createFile(dir_inode, getFilename(des));
 	copyFile(src_inode, des_inode);
