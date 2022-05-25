@@ -19,10 +19,6 @@ const char* getFilename(const char* path) {
 }
 
 void cmd::createFile(const char* filename, int size) {
-	if (!strcmp(getFilename(filename), "..")) {
-		printf("Error: \"..\" is not a valid filename!\n");
-		return;
-	}
 	if (size > 266) {
 		printf("Error: The file is too big!\n");
 		return;
@@ -33,6 +29,10 @@ void cmd::createFile(const char* filename, int size) {
 	}
 	if (strlen(getFilename(filename)) > FILENAME_MAX_LENGTH) {
 		printf("Error: The filename is too long!\n");
+		return;
+	}
+	if (!strcmp(getFilename(filename), "..")) {
+		printf("Error: \"..\" is not a valid filename!\n");
 		return;
 	}
 	INode dir_inode = getDirINode(selectINode(cwd_inode_num), filename);
@@ -63,21 +63,21 @@ void cmd::deleteFile(const char* filename) {
 }
 
 void cmd::createDir(const char* dirname) {
-	if (!strcmp(getFilename(dirname), "..")) {
-		printf("Error: \"..\" is not a valid dirname to create!\n");
-		return;
-	}
-	if (countFreeBlocks() == 0) {
-		printf("Error: Not enough space!\n");
-		return;
-	}
 	if (strlen(getFilename(dirname)) > FILENAME_MAX_LENGTH) {
 		printf("Error: The direname is too long!\n");
+		return;
+	}
+	if (!strcmp(getFilename(dirname), "..")) {
+		printf("Error: \"..\" is not a valid dirname to create!\n");
 		return;
 	}
 	INode dir_inode = getDirINode(selectINode(cwd_inode_num), dirname);
 	if (dir_inode.num == 0) {
 		printf("Error: The path does not exist!\n");
+		return;
+	}
+	if (countFreeBlocks() < dir_inode.size % BLOCK_SIZE == 0 ? dir_inode.size == BLOCK_SIZE * 10 ? 3 : 2 : 1) {
+		printf("Error: Not enough space!\n");
 		return;
 	}
 	if (getFileINode(selectINode(cwd_inode_num), dirname).num != 0) {
