@@ -150,11 +150,19 @@ void cmd::cp(const char* src, const char* des) {
 		printf("Error: Not enough space!\n");
 		return;
 	}
+	if (strlen(getFilename(des)) > FILENAME_MAX_LENGTH) {
+		printf("Error: The filename is too long!\n");
+		return;
+	}
+	INode dir_inode = getDirINode(selectINode(cwd_inode_num), des);
+	if (dir_inode.num == 0) {
+		printf("Error: The path does not exist!\n");
+		return;
+	}
 	if (getFileINode(selectINode(cwd_inode_num), des).num != 0) {
 		printf("Error: \"%s\" already exists!\n", des);
 		return;
 	}
-	INode dir_inode = getDirINode(selectINode(cwd_inode_num), des);
 	INode des_inode = createFile(dir_inode, getFilename(des));
 	copyFile(src_inode, des_inode);
 }
