@@ -18,7 +18,7 @@ const char* getFilename(const char* path) {
 	return path;
 }
 
-void cmd::createFile(const char* filename, int size) {
+void cmd::createFile(const char* path, int size) {
 	if (size > 266) {
 		printf("Error: The file is too big!\n");
 		return;
@@ -27,51 +27,51 @@ void cmd::createFile(const char* filename, int size) {
 		printf("Error: Not enough space!\n");
 		return;
 	}
-	if (strlen(getFilename(filename)) > FILENAME_MAX_LENGTH) {
+	if (strlen(getFilename(path)) > FILENAME_MAX_LENGTH) {
 		printf("Error: The filename is too long!\n");
 		return;
 	}
-	if (!strcmp(getFilename(filename), "..")) {
+	if (!strcmp(getFilename(path), "..")) {
 		printf("Error: \"..\" is not a valid filename!\n");
 		return;
 	}
-	INode dir_inode = getDirINode(selectINode(cwd_inode_num), filename);
+	INode dir_inode = getDirINode(selectINode(cwd_inode_num), path);
 	if (dir_inode.num == 0) {
 		printf("Error: The path does not exist!\n");
 		return;
 	}
-	if (getFileINode(selectINode(cwd_inode_num), filename).num != 0) {
-		printf("Error: \"%s\" already exists!\n", filename);
+	if (getFileINode(selectINode(cwd_inode_num), path).num != 0) {
+		printf("Error: \"%s\" already exists!\n", path);
 		return;
 	}
-	INode file_inode = createFile(dir_inode, getFilename(filename));
+	INode file_inode = createFile(dir_inode, getFilename(path));
 	fillFile(file_inode, size * 1024);
 }
 
-void cmd::deleteFile(const char* filename) {
-	INode file_inode = getFileINode(selectINode(cwd_inode_num), filename);
+void cmd::deleteFile(const char* path) {
+	INode file_inode = getFileINode(selectINode(cwd_inode_num), path);
 	if (file_inode.num == 0) {
-		printf("Error: \"%s\" does not exist!\n", filename);
+		printf("Error: \"%s\" does not exist!\n", path);
 		return;
 	}
 	if (file_inode.type != FILE_INODE_TYPE) {
-		printf("Error: \"%s\" is not a file!\n", filename);
+		printf("Error: \"%s\" is not a file!\n", path);
 		return;
 	}
-	INode dir_inode = getDirINode(selectINode(cwd_inode_num), filename);
-	deleteFile(dir_inode, getFilename(filename));
+	INode dir_inode = getDirINode(selectINode(cwd_inode_num), path);
+	deleteFile(dir_inode, getFilename(path));
 }
 
-void cmd::createDir(const char* dirname) {
-	if (strlen(getFilename(dirname)) > FILENAME_MAX_LENGTH) {
-		printf("Error: The direname is too long!\n");
+void cmd::createDir(const char* path) {
+	if (strlen(getFilename(path)) > FILENAME_MAX_LENGTH) {
+		printf("Error: The dirname is too long!\n");
 		return;
 	}
-	if (!strcmp(getFilename(dirname), "..")) {
+	if (!strcmp(getFilename(path), "..")) {
 		printf("Error: \"..\" is not a valid dirname to create!\n");
 		return;
 	}
-	INode dir_inode = getDirINode(selectINode(cwd_inode_num), dirname);
+	INode dir_inode = getDirINode(selectINode(cwd_inode_num), path);
 	if (dir_inode.num == 0) {
 		printf("Error: The path does not exist!\n");
 		return;
@@ -80,22 +80,22 @@ void cmd::createDir(const char* dirname) {
 		printf("Error: Not enough space!\n");
 		return;
 	}
-	if (getFileINode(selectINode(cwd_inode_num), dirname).num != 0) {
-		printf("Error: \"%s\" already exists!\n", dirname);
+	if (getFileINode(selectINode(cwd_inode_num), path).num != 0) {
+		printf("Error: \"%s\" already exists!\n", path);
 		return;
 	}
-	INode file_inode = createFile(dir_inode, getFilename(dirname));
+	INode file_inode = createFile(dir_inode, getFilename(path));
 	initDir(file_inode, dir_inode.num);
 }
 
-void cmd::deleteDir(const char* dirname) {
-	INode file_inode = getFileINode(selectINode(cwd_inode_num), dirname);
+void cmd::deleteDir(const char* path) {
+	INode file_inode = getFileINode(selectINode(cwd_inode_num), path);
 	if (file_inode.num == 0) {
-		printf("Error: \"%s\" does not exist!\n", dirname);
+		printf("Error: \"%s\" does not exist!\n", path);
 		return;
 	}
 	if (file_inode.type != DIR_INODE_TYPE) {
-		printf("Error: \"%s\" is not a directory!\n", dirname);
+		printf("Error: \"%s\" is not a directory!\n", path);
 		return;
 	}
 	if (file_inode.num == cwd_inode_num) {
@@ -107,21 +107,21 @@ void cmd::deleteDir(const char* dirname) {
 		return;
 	}
 	if (file_inode.size > 2 * DIR_ENTRY_SIZE) {
-		printf("Error: \"%s\" is not empty!\n", dirname);
+		printf("Error: \"%s\" is not empty!\n", path);
 		return;
 	}
-	INode dir_inode = getDirINode(selectINode(cwd_inode_num), dirname);
-	deleteFile(dir_inode, getFilename(dirname));
+	INode dir_inode = getDirINode(selectINode(cwd_inode_num), path);
+	deleteFile(dir_inode, getFilename(path));
 }
 
-void cmd::changeDir(const char* dirname) {
-	INode dir_inode = getFileINode(selectINode(cwd_inode_num), dirname);
+void cmd::changeDir(const char* path) {
+	INode dir_inode = getFileINode(selectINode(cwd_inode_num), path);
 	if (dir_inode.num == 0) {
-		printf("Error: \"%s\" does not exist!\n", dirname);
+		printf("Error: \"%s\" does not exist!\n", path);
 		return;
 	}
 	if (dir_inode.type != DIR_INODE_TYPE) {
-		printf("Error: \"%s\" is not a directory!\n", dirname);
+		printf("Error: \"%s\" is not a directory!\n", path);
 		return;
 	}
 	cwd_inode_num = dir_inode.num;
@@ -185,14 +185,14 @@ void cmd::sum() {
 	printf("%6d %5d %9d %3d%%\n", BLOCK_NUMBER, BLOCK_NUMBER - cnt, cnt, ((BLOCK_NUMBER - cnt) * 100 + BLOCK_NUMBER / 2) / BLOCK_NUMBER);
 }
 
-void cmd::cat(const char *filename) {
-	INode file_inode = getFileINode(selectINode(cwd_inode_num), filename);
+void cmd::cat(const char *path) {
+	INode file_inode = getFileINode(selectINode(cwd_inode_num), path);
 	if (file_inode.num == 0) {
-		printf("Error: \"%s\" does not exist!\n", filename);
+		printf("Error: \"%s\" does not exist!\n", path);
 		return;
 	}
 	if (file_inode.type != FILE_INODE_TYPE) {
-		printf("Error: \"%s\" is not a file!\n", filename);
+		printf("Error: \"%s\" is not a file!\n", path);
 		return;
 	}
 	AddrBlock cache;
