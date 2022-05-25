@@ -154,6 +154,10 @@ void cmd::cp(const char* src, const char* des) {
 		printf("Error: The filename is too long!\n");
 		return;
 	}
+	if (!strcmp(getFilename(des), "..")) {
+		printf("Error: \"..\" is not a valid filename!\n");
+		return;
+	}
 	INode dir_inode = getDirINode(selectINode(cwd_inode_num), des);
 	if (dir_inode.num == 0) {
 		printf("Error: The path does not exist!\n");
