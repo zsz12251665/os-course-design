@@ -16,7 +16,7 @@ void normalizePath(char* path) {
 		if (path[len - 2] == '/') {
 			path[len == 2 ? 1 : len - 2] = '\0';
 			len -= 2;
-		}else{
+		} else {
 			break;
 		}
 	}
