@@ -17,7 +17,7 @@ make
 ## 3. Run
 
 ```bash
-./my-oss
+./my-os
 ```
 
 ## 4. Commands
