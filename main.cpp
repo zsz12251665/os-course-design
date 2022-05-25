@@ -12,6 +12,14 @@ void normalizePath(char* path) {
 		path[len - 1] = '\0';
 		--len;
 	}
+	while (len > 1 && path[len - 1] == '.') {
+		if (path[len - 2] == '/') {
+			path[len == 2 ? 1 : len - 2] = '\0';
+			len -= 2;
+		}else{
+			break;
+		}
+	}
 }
 
 int main() {

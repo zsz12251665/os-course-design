@@ -19,6 +19,10 @@ const char* getFilename(const char* path) {
 }
 
 void cmd::createFile(const char* filename, int size) {
+	if (!strcmp(getFilename(filename), "..")) {
+		printf("Error: \"..\" is not a valid filename!\n");
+		return;
+	}
 	if (size > 266) {
 		printf("Error: The file is too big!\n");
 		return;
@@ -59,6 +63,10 @@ void cmd::deleteFile(const char* filename) {
 }
 
 void cmd::createDir(const char* dirname) {
+	if (!strcmp(getFilename(dirname), "..")) {
+		printf("Error: \"..\" is not a valid dirname to create!\n");
+		return;
+	}
 	if (countFreeBlocks() == 0) {
 		printf("Error: Not enough space!\n");
 		return;
