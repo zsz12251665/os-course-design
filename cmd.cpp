@@ -76,7 +76,7 @@ void cmd::createDir(const char* path) {
 		printf("Error: The path does not exist!\n");
 		return;
 	}
-	if (countFreeBlocks() < dir_inode.size % BLOCK_SIZE == 0 ? dir_inode.size == BLOCK_SIZE * 10 ? 3 : 2 : 1) {
+	if (countFreeBlocks() < (dir_inode.size % BLOCK_SIZE == 0 ? (dir_inode.size == BLOCK_SIZE * 10 ? 3 : 2) : 1)) {
 		printf("Error: Not enough space!\n");
 		return;
 	}
